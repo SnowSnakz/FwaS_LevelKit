@@ -89,10 +89,6 @@ foreach(var file in args)
                         }
                     }
                 }
-                else
-                {
-                    val++;
-                }
 
                 while (count > 0)
                 {
