@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34622.214
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomCompiler", "RoomCompiler\RoomCompiler.csproj", "{2DE8028A-97F9-46AC-B171-99B79DFBB647}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RoomLinker", "RoomLinker\RoomLinker.csproj", "{AEAEA446-691A-464D-90A6-17B47EA2DB14}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2DE8028A-97F9-46AC-B171-99B79DFBB647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2DE8028A-97F9-46AC-B171-99B79DFBB647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2DE8028A-97F9-46AC-B171-99B79DFBB647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2DE8028A-97F9-46AC-B171-99B79DFBB647}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AEAEA446-691A-464D-90A6-17B47EA2DB14}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AEAEA446-691A-464D-90A6-17B47EA2DB14}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AEAEA446-691A-464D-90A6-17B47EA2DB14}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AEAEA446-691A-464D-90A6-17B47EA2DB14}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D3882AFC-AB34-423B-BD01-84F085C04BDC}
+	EndGlobalSection
+EndGlobal
