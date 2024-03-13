@@ -24,57 +24,64 @@ byte[] buf = new byte[4];
 
 Console.WriteLine($"╔╡ Writing to {args[0]}");
 
-using var output = new MemoryStream();
-output.WriteByte((byte)(args.Length - 1));
-
-int total = args.Length - 1;
-for(var i = 1; i < args.Length; i++)
+try
 {
-    using var input = File.OpenRead(args[i]);
-    input.Read(buf);
+    using var output = new MemoryStream();
+    output.WriteByte((byte)(args.Length - 1));
 
-    if(buf.SequenceEqual(roomSignature))
+    int total = args.Length - 1;
+    for (var i = 1; i < args.Length; i++)
     {
-        input.CopyTo(output);
+        using var input = File.OpenRead(args[i]);
+        input.Read(buf);
 
-        Console.WriteLine($"╟───┤ Appended {args[i]}.");
+        if (buf.SequenceEqual(roomSignature))
+        {
+            input.CopyTo(output);
+
+            Console.WriteLine($"╟───┤ Appended {args[i]}.");
+        }
+        else if (buf.SequenceEqual(signature))
+        {
+            using var decompress = new InflaterInputStream(input);
+
+            using var lib = new MemoryStream();
+            decompress.CopyTo(lib);
+
+            lib.Read(buf);
+
+            int count = BitConverter.ToInt32(buf, 0);
+            total = total - 1 + count;
+
+            long pos = output.Position;
+            output.Position = 0;
+            output.WriteByte((byte)total);
+            output.Position = pos;
+
+            lib.CopyTo(output);
+
+            Console.WriteLine($"╟───┤ Appended {count} from {args[i]}.");
+        }
+        else
+        {
+            Console.WriteLine($"╟─x─┤ {args[i]} unsupported.");
+        }
     }
-    else if(buf.SequenceEqual(signature))
-    {
-        using var decompress = new InflaterInputStream(input);
 
-        using var lib = new MemoryStream();
-        decompress.CopyTo(lib);
+    Console.Write("╚═╡ Compressing... ");
 
-        lib.Read(buf);
+    output.Position = 0;
 
-        int count = BitConverter.ToInt32(buf, 0);
-        total = total - 1 + count;
+    using var outFile = File.OpenWrite(args[0]);
+    using var compressed = new DeflaterOutputStream(outFile);
 
-        long pos = output.Position;
-        output.Position = 0;
-        output.WriteByte((byte)total);
-        output.Position = pos;
+    outFile.Write(signature);
+    output.CopyTo(compressed);
+    compressed.Flush();
 
-        lib.CopyTo(output);
-
-        Console.WriteLine($"╟───┤ Appended {count} from {args[i]}.");
-    }
-    else
-    {
-        Console.WriteLine($"╟─x─┤ {args[i]} unsupported.");
-    }
+    Console.WriteLine($"DONE! <{args[0]}>");
 }
-
-Console.Write("╚═╡ Compressing... ");
-
-output.Position = 0;
-
-using var outFile = File.OpenWrite(args[0]);
-using var compressed = new DeflaterOutputStream(outFile);
-
-outFile.Write(signature);
-output.CopyTo(compressed);
-compressed.Flush();
-
-Console.WriteLine($"DONE! <{args[0]}>");
+catch (Exception ex)
+{
+    Console.WriteLine($"\r╚═╡ Failed! {ex.GetType().FullName}: {ex.Message}");
+}
