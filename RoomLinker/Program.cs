@@ -22,14 +22,19 @@ byte[] roomSignature = [
 
 byte[] buf = new byte[4];
 
-Console.WriteLine($"╔╡ Writing to {args[0]}");
+Console.WriteLine($"╥┤ Writing to {args[0]}");
 
 try
 {
     using var output = new MemoryStream();
-    output.WriteByte((byte)(args.Length - 1));
+    output.WriteByte(0);
 
-    int total = args.Length - 1;
+    int total = 0;
+    if(total > 255)
+    {
+        throw new NotSupportedException("Operation provides more than the maximum (255) supported levels per-file.");
+    }
+
     for (var i = 1; i < args.Length; i++)
     {
         using var input = File.OpenRead(args[i]);
@@ -37,26 +42,29 @@ try
 
         if (buf.SequenceEqual(roomSignature))
         {
+            total++;
             input.CopyTo(output);
 
             Console.WriteLine($"╟───┤ Appended {args[i]}.");
         }
         else if (buf.SequenceEqual(signature))
         {
-            using var decompress = new InflaterInputStream(input);
+            using var lib = new InflaterInputStream(input);
 
-            using var lib = new MemoryStream();
-            decompress.CopyTo(lib);
+            int count = lib.ReadByte();
+            if(count <= 0)
+            {
+                Console.WriteLine($"╟─x─┤ Appended 0 from {args[i]}.");
+                continue;
+            }
 
-            lib.Read(buf);
+            total += count;
 
-            int count = BitConverter.ToInt32(buf, 0);
-            total = total - 1 + count;
-
-            long pos = output.Position;
-            output.Position = 0;
-            output.WriteByte((byte)total);
-            output.Position = pos;
+            if (total > 255)
+            {
+                Console.WriteLine($"╟─x─┤ Appended 0 of {count} from {args[i]}.");
+                throw new NotSupportedException("Operation provides more than the maximum (255) supported levels per-file.");
+            }
 
             lib.CopyTo(output);
 
@@ -68,20 +76,31 @@ try
         }
     }
 
-    Console.Write("╚═╡ Compressing... ");
+    if(total <= 0)
+    {
+        Console.WriteLine("╨┤ Aborted, nothing to link.");
+    }
+    else
+    {
+        Console.Write("╨┤ Compressing... ");
 
-    output.Position = 0;
+        output.Position = 0;
+        output.WriteByte((byte)total);
+        output.Position = 0;
 
-    using var outFile = File.OpenWrite(args[0]);
-    using var compressed = new DeflaterOutputStream(outFile);
+        using var outFile = File.OpenWrite(args[0]);
+        using var compressed = new DeflaterOutputStream(outFile);
 
-    outFile.Write(signature);
-    output.CopyTo(compressed);
-    compressed.Flush();
+        outFile.Write(signature);
+        output.CopyTo(compressed);
+        compressed.Flush();
 
-    Console.WriteLine($"DONE! <{args[0]}>");
+        Console.WriteLine($"DONE! <{args[0]}>");
+    }
 }
 catch (Exception ex)
 {
-    Console.WriteLine($"\r╚═╡ Failed! {ex.GetType().FullName}: {ex.Message}");
+    Console.WriteLine($"\r╨┤ Failed! {ex.GetType().FullName}: {ex.Message}");
 }
+
+Console.WriteLine();
